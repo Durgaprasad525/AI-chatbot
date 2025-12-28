@@ -1,5 +1,4 @@
 require('dotenv').config();
-const axios = require('axios');
 
 async function listModels() {
     const key = process.env.GOOGLE_API_KEY;
@@ -10,27 +9,34 @@ async function listModels() {
 
     try {
         console.log("Fetching available models from Google API...");
-        const response = await axios.get(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
 
-        const models = response.data.models;
-        if (models) {
+        if (!response.ok) {
+            console.error(`HTTP Error: ${response.status} ${response.statusText}`);
+            const text = await response.text();
+            console.error(text);
+            return;
+        }
+
+        const data = await response.json();
+
+        if (data.models) {
             console.log("\nAvailable Models:");
-            models.forEach(m => {
-                if (m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent")) {
-                    console.log(`- ${m.name}`);
+            data.models.forEach(m => {
+                if (m.supportedGenerationMethods) {
+                    if (m.supportedGenerationMethods.includes("generateContent")) {
+                        console.log(`[CHAT] ${m.name}`);
+                    }
+                    if (m.supportedGenerationMethods.includes("embedContent")) {
+                        console.log(`[EMBED] ${m.name}`);
+                    }
                 }
             });
         } else {
             console.log("No models found in response.");
         }
     } catch (error) {
-        console.error("Failed to list models:");
-        if (error.response) {
-            console.error(`Status: ${error.response.status}`);
-            console.error(`Data:`, error.response.data);
-        } else {
-            console.error(error.message);
-        }
+        console.error("Failed to list models:", error);
     }
 }
 

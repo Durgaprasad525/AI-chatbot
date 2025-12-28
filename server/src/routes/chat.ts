@@ -25,7 +25,7 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
         const retriever = vectorStore.asRetriever();
 
         const model = new ChatGoogleGenerativeAI({
-            model: "gemini-1.5-flash",
+            model: "gemini-2.0-flash",
             apiKey: process.env.GOOGLE_API_KEY,
         });
 
